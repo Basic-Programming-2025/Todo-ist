@@ -16,11 +16,10 @@ task.json을 기준으로 일정이 관리가 됩니다.
 # 함수 설명
 def schedule_alarms(task, task_id) 함수에서
 
-alert_times = [
+alert_times = 
 (deadline - timedelta(hours=4), "⏰ 4시간 전! 🚀 제목 : "),
 (deadline - timedelta(hours=2), "⏰ 2시간 전! 🚀 제목 : "),
 (deadline - timedelta(minutes=30), "⏰ 30분 전! 🚀 제목 : ")
-]
 
 시간 : Ex) hours = 1 -> 1시간 
 분 : Ex) minutes = 30 -> 30분
