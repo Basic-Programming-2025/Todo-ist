@@ -131,20 +131,24 @@
       </form>
 
       <h3 style="margin-top: 20px;">{{ selected_date }}의 할 일 목록</h3>
-      <ul>
-        {% for task in todos.get(selected_date, []) %}
-          <li>
-            📝 <b>{{ task.title }}</b>: {{ task.desc }}
-            {% if task.deadline %}<br>마감: {{ task.deadline.replace('T', ' ') }}{% endif %}
-            <form method="POST" action="/delete" style="display:inline;">
-              <input type="hidden" name="task_id" value="{{ task.id }}">
-              <button type="submit" style="color:red;">삭제</button>
-            </form>
-          </li>
-        {% else %}
-          <i>등록된 할 일이 없습니다.</i>
-        {% endfor %}
-      </ul>
+     <ul>
+  {% for task in todos.get(selected_date, []) %}
+    <li class="{% if task.done %}done{% endif %}">
+      <form method="POST" action="/toggle" style="display:inline;">
+        <input type="hidden" name="task_id" value="{{ task.id }}">
+        <input type="checkbox" name="done" onchange="this.form.submit()" {% if task.done %}checked{% endif %} />
+        📝 <b>{{ task.title }}</b>: {{ task.desc }}
+        {% if task.deadline %}
+          <br>마감: {{ task.deadline.replace('T', ' ') }}
+        {% endif %}
+      </form>
+    </li>
+  {% else %}
+    <i>등록된 할 일이 없습니다.</i>
+  {% endfor %}
+</ul>
+
+
     </div>
   </div>
 </body>
