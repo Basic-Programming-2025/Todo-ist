@@ -1,8 +1,9 @@
 
 # TodoList Python 세팅
+```python
 pip install plyer
 pip install apscheduler
-
+```
 # Description
 HTML, JS, Python으로 구성된 프로젝트입니다.
 python webview를 통해서 HTML과 연결하도록 만들었습니다. 
