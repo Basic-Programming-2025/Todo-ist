@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>TO-DO</title>
+  <style>
+    body {
+      background-color: #f9f9f9;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 50px;
+    }
+    .container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 1200px;
+      width: 100%;
+    }
+    .calendar-section {
+      flex: 1;
+      text-align: center;
+    }
+    .form-section {
+      flex: 1;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    select, input, textarea, button {
+      font-size: 14px;
+      padding: 8px;
+      margin-bottom: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .button{
+      width: 50%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      width: 14.2%;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+      border-radius: 5px;
+    }
+    td button {
+      border: none;
+      background: none;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .selected-day {
+      border: 2px solid #1e90ff;
+      border-radius: 6px;
+      background-color: #e8f4ff;
+    }
+    .sun {
+      color: red;
+    }
+    .sat {
+      color: blue;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      font-size: 13px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .done {
+      text-decoration: line-through;
+      color: gray;
+    }
+    .delete-btn {
+      margin-left: 10px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .select-group {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .select-group select {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      height: 40px;
+      appearance: none;
+      background-color: white;
+    }
+  </style>
+  <script>
+    function setSelectedDateBeforeSubmit() {
+      const y = document.getElementById("yearSelect").value;
+      const m = document.getElementById("monthSelect").value;
+      const selectedBtn = document.querySelector(".selected-day");
+      let date = "";
+      if (!selectedBtn) {
+        const today = new Date();
+        const yy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        date = `${yy}-${mm}-${dd}`;
+      } else {
+        const d = selectedBtn.textContent.trim().padStart(2, '0');
+        date = `${y}-${String(m).padStart(2, '0')}-${d}`;
+      }
+      document.getElementById("selectedDate").value = date;
+    }
+    function changeMonthYear() {
+      const y = document.getElementById("yearSelect").value;
+      const m = document.getElementById("monthSelect").value;
+      window.location.href = `/?year=${y}&month=${m}`;
+    }
+    function selectDate(day) {
+      const y = document.getElementById("yearSelect").value;
+      const m = document.getElementById("monthSelect").value;
+      const d = String(day).padStart(2, '0');
+      const date = `${y}-${String(m).padStart(2, '0')}-${d}`;
+      window.location.href = `/?year=${y}&month=${m}&selected_date=${date}`;
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="calendar-section">
+      <h1>TO-DO</h1>
+      <div class="select-group">
+        <select id="yearSelect" onchange="changeMonthYear()">
+          {% for y in range(2020, 2031) %}
+          <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
+          {% endfor %}
+        </select>
+        <select id="monthSelect" onchange="changeMonthYear()">
+          {% for m in range(1, 13) %}
+          <option value="{{ m }}" {% if m == month %}selected{% endif %}>{{ m }}월</option>
+          {% endfor %}
+        </select>
+      </div>
+      <table>
+        <tr>
+          <th class="sun">일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th class="sat">토</th>
+        </tr>
+        {% for week in calendar %}
+        <tr>
+          {% for day in week %}
+          <td>
+            {% if day %}
+            <button onclick="selectDate({{ day }})" class="{% if selected_date[-2:]|int == day and selected_date[-5:-3]|int == month %}selected-day{% endif %}">{{ day }}</button>
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+
+    <div class="form-section">
+      <form method="POST" action="/add" onsubmit="setSelectedDateBeforeSubmit()">
+        <input type="hidden" name="date" id="selectedDate">
+        <input type="text" name="title" placeholder="제목" required>
+        <textarea name="desc" placeholder="내용"></textarea>
+        <input type="datetime-local" name="deadline">
+        <button class="button" type="submit">할 일 추가</button>
+      </form>
+
+      <form method="POST" action="/update">
+        <input type="number" name="task_id" placeholder="수정할 ID 입력" required>
+        <input type="text" name="title" placeholder="새 제목" required>
+        <textarea name="desc" placeholder="새 내용"></textarea>
+        <input type="datetime-local" name="deadline">
+        <input type="hidden" name="date" value="{{ selected_date }}">
+        <button class="button" type="submit">할 일 수정</button>
+      </form>
+
+      <h3 style="margin-top: 20px;">{{ selected_date }}의 할 일 목록</h3>
+      <ul>
+        {% for task in todos.get(selected_date, []) %}
+        <li class="{% if task.done %}done{% endif %}">
+          <form method="POST" action="/toggle" style="display:inline;">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <input type="checkbox" name="done" onchange="this.form.submit()" {% if task.done %}checked{% endif %} />
+            [{{ task.id }}] 📝 <b>{{ task.title }}</b>: {{ task.desc }}
+            {% if task.deadline %}<br>마감: {{ task.deadline.replace('T', ' ') }}{% endif %}
+          </form>
+          {% if task.done %}
+          <form method="POST" action="/delete" style="margin-left: 10px;">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+            <button type="submit" class="delete-btn">삭제</button>
+          </form>
+          {% endif %}
+        </li>
+        {% else %}
+        <i>등록된 할 일이 없습니다.</i>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
