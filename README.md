@@ -16,7 +16,7 @@ task.json을 기준으로 일정이 관리가 됩니다.
 
 # 함수 설명
 
-알람 설정 함수수
+알람 설정 함수
 ```python
 def schedule_alarms(task, task_id) 함수에서
 
@@ -33,9 +33,9 @@ alert_times = [
 
 ```
 
-알람 설정 취소 함수. 
+알람 설정 취소 함수입니다.<br>
 일정 완료 표시하실 때, 
-조기 완료이면 아래에 cancel_alarms 호출 추가해주시면 될 것 같습니다.
+조기 완료이면 아래에 cancel_alarms 호출 추가해주시면 될 것 같습니다. <br>
 task_id는 delete_task 참조 바랍니다.
 ```python
 
