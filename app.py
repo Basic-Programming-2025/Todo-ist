@@ -16,6 +16,9 @@ DATA_FILE = "tasks.json"
 scheduler = BackgroundScheduler()
 scheduler.start()
 
+
+
+
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump([], f, ensure_ascii=False)
@@ -50,7 +53,7 @@ def schedule_alarms(task, task_id):
     alert_times = [
         (deadline - timedelta(hours=4), "⏰ 4시간 전! 🚀 제목 : "),
         (deadline - timedelta(hours=2), "⏰ 2시간 전! 🚀 제목 : "),
-        (deadline - timedelta(minutes=10), "⏰ 30분 전! 🚀 제목 : ")
+        (deadline - timedelta(minutes=30), "⏰ 30분 전! 🚀 제목 : ")
     ]
 
     for i, (alert_time, label) in enumerate(alert_times):
@@ -112,7 +115,6 @@ def add_task():
             tasks = json.load(f)
         except:
             tasks = []
-
         tasks.append(task)
         f.seek(0)
         f.truncate()
@@ -123,8 +125,43 @@ def add_task():
 
     return redirect(url_for('index', selected_date=task["date"]))
 
+@app.route("/update", methods=["POST"])
+def update_task():
+    try:
+        task_id = int(request.form.get("task_id"))
+    except:
+        return redirect(url_for("index"))
+
+    title = request.form.get("title")
+    desc = request.form.get("desc")
+    deadline = request.form.get("deadline")
+    date = request.form.get("date")
+
+    with open(DATA_FILE, "r+", encoding="utf-8") as f:
+        try:
+            tasks = json.load(f)
+        except:
+            tasks = []
+
+        if 0 <= task_id < len(tasks):
+            tasks[task_id].update({
+                "title": title,
+                "desc": desc,
+                "deadline": deadline,
+                "date": date
+            })
+
+            f.seek(0)
+            f.truncate()
+            json.dump(tasks, f, ensure_ascii=False, indent=2)
+
+            cancel_alarms(task_id)
+            schedule_alarms(tasks[task_id], task_id)
+
+    return redirect(url_for("index", selected_date=date))
+
 @app.route("/toggle", methods=["POST"])
-def toggle_done():
+def toggle_task():
     try:
         task_id = int(request.form.get("task_id"))
     except:
@@ -138,13 +175,11 @@ def toggle_done():
 
         if 0 <= task_id < len(tasks):
             tasks[task_id]["done"] = not tasks[task_id].get("done", False)
-            date = tasks[task_id]["date"]
             f.seek(0)
             f.truncate()
             json.dump(tasks, f, ensure_ascii=False, indent=2)
-            return redirect(url_for("index", selected_date=date))
 
-    return redirect(url_for("index"))
+    return redirect(url_for("index", selected_date=tasks[task_id]["date"]))
 
 @app.route("/delete", methods=["POST"])
 def delete_task():
