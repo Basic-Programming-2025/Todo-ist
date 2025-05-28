@@ -48,9 +48,9 @@ def schedule_alarms(task, task_id):
     deadline = datetime.fromisoformat(deadline)
     now = datetime.now()
     alert_times = [
-            (deadline - timedelta(hours=4), "⏰ 4시간 전! 🚀 제목 : "),
-            (deadline - timedelta(hours=2), "⏰ 2시간 전! 🚀 제목 : "),
-            (deadline - timedelta(minutes=10), "⏰ 30분 전! 🚀 제목 : ")
+        (deadline - timedelta(hours=4), "⏰ 4시간 전! 🚀 제목 : "),
+        (deadline - timedelta(hours=2), "⏰ 2시간 전! 🚀 제목 : "),
+        (deadline - timedelta(minutes=10), "⏰ 30분 전! 🚀 제목 : ")
     ]
 
     for i, (alert_time, label) in enumerate(alert_times):
@@ -78,11 +78,9 @@ def index():
 
     tasks = load_todos()
     todos = defaultdict(list)
-    todos_with_id = []
 
     for i, task in enumerate(tasks):
         task_with_id = {"id": i, **task}
-        todos_with_id.append(task_with_id)
         todos[task["date"]].append(task_with_id)
 
     calendar_data = get_calendar(year, month)
@@ -114,6 +112,7 @@ def add_task():
             tasks = json.load(f)
         except:
             tasks = []
+
         tasks.append(task)
         f.seek(0)
         f.truncate()
@@ -123,6 +122,29 @@ def add_task():
     schedule_alarms(task, task_id)
 
     return redirect(url_for('index', selected_date=task["date"]))
+
+@app.route("/toggle", methods=["POST"])
+def toggle_done():
+    try:
+        task_id = int(request.form.get("task_id"))
+    except:
+        return redirect(url_for("index"))
+
+    with open(DATA_FILE, "r+", encoding="utf-8") as f:
+        try:
+            tasks = json.load(f)
+        except:
+            tasks = []
+
+        if 0 <= task_id < len(tasks):
+            tasks[task_id]["done"] = not tasks[task_id].get("done", False)
+            date = tasks[task_id]["date"]
+            f.seek(0)
+            f.truncate()
+            json.dump(tasks, f, ensure_ascii=False, indent=2)
+            return redirect(url_for("index", selected_date=date))
+
+    return redirect(url_for("index"))
 
 @app.route("/delete", methods=["POST"])
 def delete_task():
