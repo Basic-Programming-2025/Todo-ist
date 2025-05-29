@@ -207,12 +207,12 @@
             [{{ task.id }}] 📝 <b>{{ task.title }}</b>: {{ task.desc }}
             {% if task.deadline %}<br>마감: {{ task.deadline.replace('T', ' ') }}{% endif %}
           </form>
-          {% if task.done %}
+       
           <form method="POST" action="/delete" style="margin-left: 10px;">
             <input type="hidden" name="task_id" value="{{ task.id }}">
             <button type="submit" class="delete-btn">삭제</button>
           </form>
-          {% endif %}
+         
         </li>
         {% else %}
         <i>등록된 할 일이 없습니다.</i>
